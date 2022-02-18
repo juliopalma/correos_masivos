@@ -4,10 +4,7 @@ const app = express();
 const axios = require('axios');
 app.use(express.static('static'));
 const fs = require('fs');
-const { v4: uuidv4 } = require('uuid')
-
-//Identificador único
-const newId = uuidv4();
+const uuid = require('uuid');
 
 app.get('/email', async(req, res) => {
     // 1. Recuperar datos del formulario
@@ -18,7 +15,7 @@ app.get('/email', async(req, res) => {
     // 2. Recuperar info financiera directamente desde la API
     const infoPesos = await axios.get("https://mindicador.cl/api");
 
-    console.log(destinatarios, asunto, contenido);
+    //console.log(destinatarios, asunto, contenido);
 
     /*console.log(
         `El valor del dolar el día de hoy es: ${infoPesos.data.dolar.valor} \n 
@@ -32,13 +29,27 @@ app.get('/email', async(req, res) => {
              El valor del uf el día de hoy es: ${infoPesos.data.uf.valor} <br>
              El valor del utm el día de hoy es: ${infoPesos.data.utm.valor}`;
 
-    //A Borrar
+
     //const valores = `${infoPesos.data}`
+
     //console.log(infoPesos);
 
-    //Envio de correos
-    enviar_email(destinatarios, asunto, contenido.concat(" " + contenido_correo));
-    es.send('Email enviado con éxito');
+    const basecontenido = contenido.concat(" " + contenido_correo);
+
+    enviar_email(destinatarios, asunto, basecontenido);
+
+    const id = uuid.v4();
+
+    fs.appendFile(`./correos/${id}.txt`, `${basecontenido}`, (error) => {
+        if (error) {
+            throw error;
+        }
+
+        console.log("El archivo a sido creado exitosamente");
+    })
+
+    res.send('Email enviado con éxito');
+
 })
 
 app.listen(3000, () => {
