@@ -7,21 +7,13 @@ const fs = require('fs');
 const uuid = require('uuid');
 
 app.get('/email', async(req, res) => {
-    // 1. Recuperar datos del formulario
+    //Recuperar datos del formulario
     const destinatarios = req.query.destinatarios;
     const asunto = req.query.asunto;
     const contenido = req.query.contenido;
 
-    // 2. Recuperar info financiera directamente desde la API
+    //Recuperar info financiera directamente desde la API
     const infoPesos = await axios.get("https://mindicador.cl/api");
-
-    //console.log(destinatarios, asunto, contenido);
-
-    /*console.log(
-        `El valor del dolar el día de hoy es: ${infoPesos.data.dolar.valor} \n 
-         El valor del euro el día de hoy es: ${infoPesos.data.euro.valor} \n 
-         El valor del uf el día de hoy es: ${infoPesos.data.uf.valor} \n
-         El valor del utm el día de hoy es: ${infoPesos.data.utm.valor}`);*/
 
     const contenido_correo =
         `El valor del dolar el día de hoy es: ${infoPesos.data.dolar.valor} <br>
@@ -30,16 +22,15 @@ app.get('/email', async(req, res) => {
              El valor del utm el día de hoy es: ${infoPesos.data.utm.valor}`;
 
 
-    //const valores = `${infoPesos.data}`
+    const basecontenido = contenido.concat("<br>" + contenido_correo);
 
-    //console.log(infoPesos);
-
-    const basecontenido = contenido.concat(" " + contenido_correo);
-
+    //Envia el correo
     enviar_email(destinatarios, asunto, basecontenido);
 
+    //crea un identificador
     const id = uuid.v4();
 
+    //crea el archivo y lo guarda en la carpeta correos
     fs.appendFile(`./correos/${id}.txt`, `${basecontenido}`, (error) => {
         if (error) {
             throw error;
@@ -48,39 +39,10 @@ app.get('/email', async(req, res) => {
         console.log("El archivo a sido creado exitosamente");
     })
 
-    res.send('Email enviado con éxito');
-
+    //res.send('Email enviado con éxito');
+    res.redirect('/');
 })
 
 app.listen(3000, () => {
     console.log('servidor ejecutando');
 })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*const enviar_email = require('./email.js');
-const express = require('express');
-const app = express();
-
-app.get('/email', (req, res) => {
-    //recibe el correo
-    enviar_email('j.palma.quezada@gmail.com', 'asunto de correo electrónico', 'Este es el comentario del correo electronico');
-    res.send("Email enviado con exito");
-});
-
-app.listen(3000, () => {
-    console.log("Servidor ejecutando");
-})
-*/
